@@ -25,11 +25,11 @@ func NewStackServer(ip string, port int) *StackServer {
         mux: iris.New(),
     }
 
-    ss.mux.Get("/:bucket/:path/:object", ss.Handle_GetObject) 
+    ss.mux.Get("/:bucket/:object", ss.Handle_GetObject) 
 
-    ss.mux.Put("/:object", ss.Handle_PutObject)
+    ss.mux.Put("/:bucket/:object", ss.Handle_PutObject)
 
-    ss.mux.Delete("/:bucket/:path/:object", ss.Handle_DelObject)
+    ss.mux.Delete("/:bucket/:object", ss.Handle_DelObject)
     return ss
 }
 
@@ -49,7 +49,6 @@ func get_upload_file_content(ctx *iris.Context) ([] byte, error){
     var file_bytes [] byte
 
     req := ctx.Request
-
 
     /*
     type Form struct {
@@ -112,11 +111,9 @@ func get_upload_file_content(ctx *iris.Context) ([] byte, error){
 func (ss *StackServer) Handle_PutObject(ctx *iris.Context){
 
     bucket := ctx.Param("bucket")
-    path := ctx.Param("path")
     object := ctx.Param("object")
     utils.LogDebug("Handle_PutObject", log.Fields{
         "bucket": bucket,
-        "path": path,
         "object": object,
     })
 
