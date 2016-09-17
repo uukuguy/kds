@@ -32,6 +32,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/uukuguy/kds/server"
 	"github.com/uukuguy/kds/utils"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -81,6 +82,17 @@ func setRateLimitHandler(handler http.Handler) http.Handler {
 
 // -------- execute_serverCmd() --------
 func execute_serverCmd(cmd *cobra.Command, args []string) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+    utils.LogInfo("Kleine Dateien Stack - Server...", log.Fields{}, nil)
+
+    ss := server.NewStackServer(server_ip, server_port) 
+
+    ss.ListenAndServe()
+}
+
+// -------- execute_serverCmd_Mux() --------
+func execute_serverCmd_Mux(cmd *cobra.Command, args []string) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	fmt.Println("Kleine Dateien Stack - Server...")

@@ -48,16 +48,16 @@ func (oh ObjectHandlers) Handle_GetObject(w http.ResponseWriter, r *http.Request
 // ======== Handle_PutObject ========
 func (oh ObjectHandlers) Handle_PutObject(w http.ResponseWriter, r *http.Request) {
 
-	size := r.ContentLength
-	if size == -1 && !contains(r.TransferEncoding, "chunked") {
-		writeErrorResponse(w, r, ErrMissingContentLength, r.URL.Path)
-		return
-	}
-	/// maximum Upload size for objects in a single operation
-	if isMaxObjectSize(size) {
-		writeErrorResponse(w, r, ErrEntityTooLarge, r.URL.Path)
-		return
-	}
+	//size := r.ContentLength
+	//if size == -1 && !contains(r.TransferEncoding, "chunked") {
+		//writeErrorResponse(w, r, ErrMissingContentLength, r.URL.Path)
+		//return
+	//}
+	///// maximum Upload size for objects in a single operation
+	//if isMaxObjectSize(size) {
+		//writeErrorResponse(w, r, ErrEntityTooLarge, r.URL.Path)
+		//return
+	//}
 }
 
 // ======== Handle_DeleteObject ========
