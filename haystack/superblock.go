@@ -44,14 +44,14 @@ func NewSuperBlock() *SuperBlock {
 }
 
 // ======== WriteToFile() ========
-func (this *SuperBlock) WriteToFile(writer *os.File) (writedSize int64, err error) {
+func (this *SuperBlock) WriteToFile(writer *os.File) (writedSize uint64, err error) {
 	writedSize = 0
 
 	// Write Super Block Magic
 	if _, err = writer.Write(this.Magic); err != nil {
 		return
 	}
-	writedSize += int64(len(this.Magic))
+	writedSize += uint64(len(this.Magic))
 
 	// Write Super Block Version
 	if _, err = writer.Write([]byte{this.Version}); err != nil {
@@ -63,7 +63,7 @@ func (this *SuperBlock) WriteToFile(writer *os.File) (writedSize int64, err erro
 	if _, err = writer.Write(this.Padding); err != nil {
 		return
 	}
-	writedSize += int64(len(this.Padding))
+	writedSize += uint64(len(this.Padding))
 
 	return
 }

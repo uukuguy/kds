@@ -13,8 +13,10 @@ const (
 	msgVolumeNotExist = 2001
 
 	// -------- Data --------
+	msgDataNomoreSpace = 3001
 
 	// -------- Index --------
+	msgIndexNomoreSpace = 4001
 
 	// -------- Needle --------
 	msgNeedleNotExist = 5001
@@ -31,8 +33,10 @@ var (
 		msgVolumeNotExist: "Volume not exist.",
 
 		// -------- Data --------
+		msgDataNomoreSpace: "No more space in data file",
 
 		// -------- Index --------
+		msgIndexNomoreSpace: "No more space in index file.",
 
 		// -------- Needle --------
 		msgNeedleNotExist: "Needle not exist.",
@@ -48,8 +52,10 @@ var (
 	ErrVolumeNotExist = Error(msgVolumeNotExist)
 
 	// -------- Data --------
+	ErrDataNomoreSpace = Error(msgDataNomoreSpace)
 
 	// -------- Index --------
+	ErrIndexNomoreSpace = Error(msgIndexNomoreSpace)
 
 	// -------- Needle --------
 	ErrNeedleNotExist = Error(msgNeedleNotExist)

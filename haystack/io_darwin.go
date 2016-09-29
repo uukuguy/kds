@@ -7,7 +7,7 @@ const (
 	FALLOC_FL_KEEP_SIZE = 0x01 /* default is extend size */
 )
 
-func Fallocate(fd uintptr, mode uint32, off int64, len int64) (err error) {
+func Fallocate(fd uintptr, mode uint32, off uint64, len uint64) (err error) {
 	return
 }
 
@@ -24,7 +24,7 @@ const (
 	POSIX_FADV_DONTNEED   = 0
 )
 
-func Fadvise(fd uintptr, off int64, len int64, advise int) (err error) {
+func Fadvise(fd uintptr, off uint64, len uint64, advise int) (err error) {
 	return
 }
 
@@ -34,6 +34,6 @@ const (
 	SYNC_FILE_RANGE_WAIT_AFTER  = 4
 )
 
-func Syncfilerange(fd uintptr, off int64, n int64, flags int) (err error) {
+func Syncfilerange(fd uintptr, off uint64, n uint64, flags int) (err error) {
 	return
 }

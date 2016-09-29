@@ -22,9 +22,9 @@ type Data struct {
 	writer        *os.File
 	superblock    *SuperBlock
 	Dir           string
-	FileSize      int64
-	syncedSize    int64
-	AlignedOffset uint32 // FileSize / NEEDLE_PADDINGSIZE
+	FileSize      uint64
+	syncedSize    uint64
+	AlignedOffset uint64 // FileSize / NEEDLE_PADDINGSIZE
 	closed        bool
 	cache_writed  int32
 }
@@ -82,7 +82,7 @@ func (this *Data) Init() (err error) {
 		return
 	}
 
-	var filesize int64
+	var filesize uint64
 	if filesize, err = utils.GetFileSize(this.reader); err != nil {
 		return
 	}
@@ -104,8 +104,8 @@ func (this *Data) Init() (err error) {
 		}
 		this.FileSize = filesize
 		this.syncedSize = this.FileSize
-		this.AlignedOffset = uint32(this.FileSize / NEEDLE_PADDINGSIZE)
-		this.writer.Seek(this.FileSize, os.SEEK_SET)
+		this.AlignedOffset = this.FileSize / NEEDLE_PADDINGSIZE
+		this.writer.Seek(int64(this.FileSize), os.SEEK_SET)
 	}
 
 	return
@@ -115,7 +115,7 @@ func (this *Data) Init() (err error) {
 func (this *Data) writeSuperBlock() (err error) {
 	this.writer.Seek(0, os.SEEK_SET)
 
-	var writedSize int64
+	var writedSize uint64
 	if writedSize, err = this.superblock.WriteToFile(this.writer); err == nil {
 		this.FileSize = writedSize
 		this.AlignedOffset = SUPERBLOCK_SIZE / NEEDLE_PADDINGSIZE
@@ -154,8 +154,8 @@ func (this *Data) getDataFileName() string {
 func (this *Data) flushFile(force bool) (err error) {
 	var (
 		fd     uintptr
-		offset int64
-		size   int64
+		offset uint64
+		size   uint64
 	)
 	if this.cache_writed++; !force && this.cache_writed < DATAFILE_MAX_CACHEWRITE {
 		return
@@ -205,7 +205,7 @@ func (this *Data) Close() {
 // Keep write needles to the end of data file.
 func (this *Data) AppendNeedle(needle *Needle) (region NeedleRegion, err error) {
 
-	if DATAFILE_MAXSIZE-int64(needle.WriteSize) < this.FileSize {
+	if DATAFILE_MAXSIZE-uint64(needle.WriteSize) < this.FileSize {
 		err = fmt.Errorf("No more free space in data file.")
 		return
 	}
@@ -213,10 +213,10 @@ func (this *Data) AppendNeedle(needle *Needle) (region NeedleRegion, err error) 
 	if _, err = this.writer.Write(needle.Buffer()); err == nil {
 		region.AlignedOffset = this.AlignedOffset
 		region.Size = needle.WriteSize
-		this.AlignedOffset += needle.AlignedSize
-		this.FileSize += int64(needle.WriteSize)
+		this.AlignedOffset += uint64(needle.AlignedSize)
+		this.FileSize += uint64(needle.WriteSize)
 		if err = this.flushFile(false); err != nil {
-			this.FileSize -= int64(needle.WriteSize)
+			this.FileSize -= uint64(needle.WriteSize)
 			return
 		}
 	} else {
@@ -245,8 +245,8 @@ func (this *Data) FindNeedle(key int64) (needle *Needle, err error) {
 }
 
 func (this *Data) GetNeedle(key int64, region NeedleRegion) (needle *Needle, err error) {
-	offset := int64(region.AlignedOffset) * NEEDLE_PADDINGSIZE
-	this.reader.Seek(offset, os.SEEK_SET)
+	offset := region.GetOffset()
+	this.reader.Seek(int64(offset), os.SEEK_SET)
 	utils.LogDebugf("reader.Seek() offset=%d region:%+v", offset, region)
 	reader := bufio.NewReaderSize(this.reader, int(region.Size))
 	var buf []byte

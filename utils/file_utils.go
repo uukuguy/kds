@@ -6,13 +6,13 @@ import (
 )
 
 // ======== GetFileSize() ========
-func GetFileSize(file *os.File) (filesize int64, err error) {
+func GetFileSize(file *os.File) (filesize uint64, err error) {
 	var stat os.FileInfo
 	if stat, err = file.Stat(); err != nil {
 		log.Errorf("os.File.Stat() error(%v)", err)
 		return
 	}
-	filesize = stat.Size()
+	filesize = uint64(stat.Size())
 	return
 }
 

@@ -18,7 +18,7 @@ const (
 	FALLOC_FL_KEEP_SIZE = uint32(C.FALLOC_FL_KEEP_SIZE)
 )
 
-func Fallocate(fd uintptr, mode uint32, off int64, size int64) error {
+func Fallocate(fd uintptr, mode uint32, off uint64, size uint64) error {
 	return syscall.Fallocate(int(fd), mode, off, size)
 }
 
@@ -35,7 +35,7 @@ const (
 	POSIX_FADV_DONTNEED   = int(C.POSIX_FADV_DONTNEED)
 )
 
-func Fadvise(fd uintptr, off int64, size int64, advise int) (err error) {
+func Fadvise(fd uintptr, off uint64, size uint64, advise int) (err error) {
 	var errno int
 	if errno = int(C.posix_fadvise(C.int(fd), C.__off_t(off), C.__off_t(size), C.int(advise))); errno != 0 {
 		err = syscall.Errno(errno)
@@ -49,6 +49,6 @@ const (
 	SYNC_FILE_RANGE_WAIT_AFTER  = 4
 )
 
-func Syncfilerange(fd uintptr, off int64, n int64, flags int) (err error) {
+func Syncfilerange(fd uintptr, off uint64, n uint64, flags int) (err error) {
 	return syscall.SyncFileRange(int(fd), off, n, flags)
 }
