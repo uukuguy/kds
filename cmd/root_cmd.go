@@ -60,7 +60,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.kds.yaml)")
 
 	// Local flags, which will only run when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolP("vmodule", "v", false, "glog vmodule. -v=1 for debug.")
 
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	//viper.SetDefault("license", "mit")
@@ -68,17 +68,21 @@ func init() {
 
 // -------- initConfig() --------
 func initConfig() {
+	viper.SetConfigType("yaml")
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName(".kdsrc")
-	viper.AddConfigPath("$HOME")
+	viper.SetConfigName(".kds")
+	viper.AddConfigPath("/etc/kds/")
+	viper.AddConfigPath("$HOME/.kds")
+	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
 }
 
 // -------- execute_rootCmd() --------

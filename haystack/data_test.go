@@ -24,29 +24,21 @@
 # *　　　　　　　 ┗┻┛　   ┗┻┛+ + + +
 # */
 
-package server
+package haystack
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
+	"fmt"
+	"testing"
 )
 
-// ======== Public Const Variables ========
-const (
-	SERVER_DEFAULT_NAME     = "kds"
-	SERVER_DEFAULT_IP       = "0.0.0.0"
-	SERVER_DEFAULT_PORT     = 8709
-	SERVER_DEFAULT_STOREDIR = "kds.store"
-)
+func TestData(t *testing.T) {
+	np := NeedlePosition{1, 32}
+	value := np.to_int64()
+	fmt.Println("np.to_int64() value=", value)
 
-// HandlerFunc - useful to chain different middleware http.Handler
-type HandlerFunc func(http.Handler) http.Handler
-
-func RegisterHandlers(r *mux.Router, handlerFns ...HandlerFunc) http.Handler {
-	var f http.Handler
-	f = r
-	for _, hFn := range handlerFns {
-		f = hFn(f)
+	np0 := NeedlePosition{}
+	np0.from_int64(value)
+	if np0.Offset != 1 || np0.Size != 32 {
+		t.Errorf("NeedlePosition.from_int64() failed. np0.Offset=%d np0.Size=%d", np0.Offset, np0.Size)
 	}
-	return f
 }

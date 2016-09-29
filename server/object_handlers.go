@@ -50,13 +50,13 @@ func (oh ObjectHandlers) Handle_PutObject(w http.ResponseWriter, r *http.Request
 
 	//size := r.ContentLength
 	//if size == -1 && !contains(r.TransferEncoding, "chunked") {
-		//writeErrorResponse(w, r, ErrMissingContentLength, r.URL.Path)
-		//return
+	//writeErrorResponse(w, r, ErrMissingContentLength, r.URL.Path)
+	//return
 	//}
 	///// maximum Upload size for objects in a single operation
 	//if isMaxObjectSize(size) {
-		//writeErrorResponse(w, r, ErrEntityTooLarge, r.URL.Path)
-		//return
+	//writeErrorResponse(w, r, ErrEntityTooLarge, r.URL.Path)
+	//return
 	//}
 }
 

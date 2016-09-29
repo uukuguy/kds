@@ -1,0 +1,11 @@
+IndexFileName: test.idx
+hobbies:
+- one
+- two
+- three
+clothing:
+  jacket: 
+  - j1
+  - j2
+  - j3
+  trousers: t2

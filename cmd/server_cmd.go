@@ -32,7 +32,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/uukuguy/kds/server"
 	"github.com/uukuguy/kds/utils"
-	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -46,8 +45,10 @@ var serverCmd = &cobra.Command{
 	Run:   execute_serverCmd,
 }
 
+var server_name = server.SERVER_DEFAULT_NAME
 var server_ip = server.SERVER_DEFAULT_IP
 var server_port = server.SERVER_DEFAULT_PORT
+var store_dir = server.SERVER_DEFAULT_STOREDIR
 
 // -------- init() --------
 func init() {
@@ -58,10 +59,13 @@ func init() {
 		&server_ip, "ip", server.SERVER_DEFAULT_IP, "Server IP.")
 	serverCmd.PersistentFlags().IntVar(
 		&server_port, "port", server.SERVER_DEFAULT_PORT, "Server port.")
+	serverCmd.PersistentFlags().StringVar(
+		&store_dir, "dir", server.SERVER_DEFAULT_STOREDIR, "Store Dir.")
+	serverCmd.PersistentFlags().StringVar(
+		&server_name, "name", server.SERVER_DEFAULT_NAME, "Server Name.")
 
 	// Local flags, which will only run when this action is called directly.
-	serverCmd.Flags().BoolP(
-		"toggle", "t", false, "Help message for toggle")
+	serverCmd.Flags().IntP("vmodule", "v", 0, "glog vmodule. -v=1 for debug.")
 
 }
 
@@ -84,11 +88,15 @@ func setRateLimitHandler(handler http.Handler) http.Handler {
 func execute_serverCmd(cmd *cobra.Command, args []string) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-    utils.LogInfo("Kleine Dateien Stack - Server...", log.Fields{}, nil)
+	utils.LogInfof("Kleine Dateien Stack - Server...")
 
-    ss := server.NewStackServer(server_ip, server_port) 
+	var ss *server.StackServer
+	var err error
+	if ss, err = server.NewStackServer(server_ip, server_port, store_dir); err != nil {
+	}
+	defer ss.Close()
 
-    ss.ListenAndServe()
+	ss.ListenAndServe()
 }
 
 // -------- execute_serverCmd_Mux() --------

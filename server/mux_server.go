@@ -29,7 +29,6 @@ package server
 import (
 	"crypto/tls"
 	"errors"
-	log "github.com/Sirupsen/logrus"
 	"github.com/uukuguy/kds/utils"
 	"net"
 	"net/http"
@@ -119,7 +118,7 @@ func (ms *MuxServer) ListenAndServe() error {
 	ms.listener = muxListener
 	ms.mutex.Unlock()
 
-	utils.LogInfo("Server "+ms.Name+" ListenAndServer()", log.Fields{"addr": ms.Server.Addr})
+	utils.LogInfof("Server "+ms.Name+" ListenAndServer(). addr:%s", ms.Server.Addr)
 
 	return ms.Server.Serve(muxListener)
 }
