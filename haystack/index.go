@@ -333,7 +333,6 @@ func (this *Index) writeSuperBlock() (err error) {
 }
 
 // -------- AppendIndexEntry() --------
-//func (this *Index) AppendIndexEntry(key int64, region NeedleRegion) (err error) {
 func (this *Index) AppendIndexEntry(entry IndexEntry) (err error) {
 	key := entry.Key
 	region := entry.Region

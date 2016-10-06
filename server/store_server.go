@@ -1,6 +1,7 @@
 package server
 
 import (
+	//"github.com/AsynkronIT/gam/actor"
 	"fmt"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
@@ -42,9 +43,9 @@ func NewStackServer(ip string, port int, store_dir string) (ss *StackServer, err
 		return
 	}
 
-	ss.mux.Get("/:bucket/*object", ss.GetObjectHandler)
-	ss.mux.Put("/:bucket/*object", ss.PutObjectHandler)
-	ss.mux.Delete("/:bucket/*object", ss.DelObjectHandler)
+	ss.mux.Get("/:bucket/*object", ss.DownloadHandler)
+	ss.mux.Put("/:bucket/*object", ss.UploadHandler)
+	ss.mux.Delete("/:bucket/*object", ss.DeleteHandler)
 
 	return
 }
@@ -65,8 +66,8 @@ func (ss *StackServer) ListenAndServe() {
 	ss.mux.Run(standard.New(addr))
 }
 
-// ======== GetObjectHandler() ========
-func (this *StackServer) GetObjectHandler(ctx echo.Context) (err error) {
+// ======== DownloadHandler() ========
+func (this *StackServer) DownloadHandler(ctx echo.Context) (err error) {
 	var (
 		vid    int64
 		key    int64
@@ -82,13 +83,13 @@ func (this *StackServer) GetObjectHandler(ctx echo.Context) (err error) {
 		return
 	}
 
-	utils.LogDebugf("GetObjectHandler() vid=%d key=%d cookie=%d", vid, key, cookie)
+	utils.LogDebugf("DownloadHandler() vid=%d key=%d cookie=%d", vid, key, cookie)
 
 	var volume *haystack.Volume
 	var ok bool
 	if volume, ok = this.store.GetVolume(int32(vid)); !ok {
 		err = fmt.Errorf("Volume not exist. vid=%d", vid)
-		utils.LogErrorf(err, "GetObjectHandler()")
+		utils.LogErrorf(err, "DownloadHandler()")
 		return
 	}
 
@@ -135,11 +136,40 @@ func checkFileSize(file multipart.File, maxSize int) (size int64, err error) {
 	return
 }
 
-// ======== PutObjectHandler() ========
-func (this *StackServer) PutObjectHandler(ctx echo.Context) (err error) {
+//type UploadMessage struct {
+	//Context echo.Context
+	//Stack_server *StackServer
+//}
+
+//type UploadActor struct {}
+//func (this *UploadActor) Receive(actor_context actor.Context){
+	//switch msg := actor_context.Message().(type){
+	//case *actor.Started:
+		//utils.LogDebugf("Started, initialize actor here.")
+	//case *actor.Stopping:
+		//utils.LogDebugf("Stopping, actor is about shut down.")
+	//case *actor.Stopped:
+		//utils.LogDebugf("Stopped, actor and it's children are stopped.")
+	//case *actor.Restarting:
+		//utils.LogDebugf("Restarting, actor is about restart.")
+	//case UploadMessage:
+		//handle_Upload(msg.Stack_server, msg.Context)	
+	//}
+//}
+
+// ======== UploadHandler() ========
+func (this *StackServer) UploadHandler(ctx echo.Context) (err error) {
+	//props := actor.FromInstance(&UploadActor{})
+	//pid := actor.Spawn(props)
+	//pid.Tell(UploadMessage{Context: ctx, Stack_server: this,})
+	//return 
+//}
+
+//// -------- handle_Upload() --------
+//func handle_Upload(this *StackServer, ctx echo.Context) (err error){
 	bucket := ctx.Param("bucket")
 	object := ctx.Param("object")
-	utils.LogDebugf("PutObjectHandler() bucket:%s object:%s", bucket, object)
+	utils.LogDebugf("UploadHandler() bucket:%s object:%s", bucket, object)
 
 	var (
 		vid    int64
@@ -147,12 +177,15 @@ func (this *StackServer) PutObjectHandler(ctx echo.Context) (err error) {
 		cookie int64
 	)
 	if vid, err = strconv.ParseInt(ctx.FormValue("vid"), 10, 32); err != nil {
+		utils.LogErrorf(err, "ParseInt from vid")
 		return
 	}
 	if key, err = strconv.ParseInt(ctx.FormValue("key"), 10, 64); err != nil {
+		utils.LogErrorf(err, "ParseInt from Key")
 		return
 	}
 	if cookie, err = strconv.ParseInt(ctx.FormValue("cookie"), 10, 64); err != nil {
+		utils.LogErrorf(err, "ParseInt from cookie")
 		return
 	}
 	var fh *multipart.FileHeader
@@ -198,22 +231,24 @@ Content-Type:         %s
 	// Create new needle and fill the data and metadata.
 	needle := haystack.NewNeedle(key, int32(cookie), uint32(file_len))
 
-	needle.Data = make([]byte, file_len)
-	if _, err := file.Read(needle.Data); err != nil {
+	if err = needle.ReadFrom(file); err != nil {
+		return
 	}
+	//needle.Data = make([]byte, file_len)
+	//if _, err := file.Read(needle.Data); err != nil {
+	//}
 
 	// Save to local store.
 	volume.WriteNeedle(needle)
 
 	utils.LogInfof("Upload a needle to a volume. \n%s\n%s\n", needle.String(), volume.String())
-	//}
 
-	//ctx.Data(iris.StatusOK, []byte("Handle_PutObject() return OK."))
+	//ctx.Data(iris.StatusOK, []byte("Handle_Upload() return OK."))
 
-	return ctx.HTML(http.StatusOK, "Handle_PutObject() return OK.\n")
+	return ctx.HTML(http.StatusOK, "Handle_Upload() return OK.\n")
 }
 
-// ======== DelObjectHandler() ========
-func (this *StackServer) DelObjectHandler(ctx echo.Context) (err error) {
+// ======== DeleteHandler() ========
+func (this *StackServer) DeleteHandler(ctx echo.Context) (err error) {
 	return
 }

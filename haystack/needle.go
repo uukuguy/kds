@@ -1,11 +1,13 @@
 package haystack
 
 import (
+	"io"
 	"bytes"
 	"fmt"
 	"github.com/uukuguy/kds/utils"
 	"sync"
 	"syscall"
+	"hash/crc32"
 	"time"
 )
 
@@ -66,6 +68,8 @@ var (
 	footerMagic       = []byte{0x35, 0x89, 0x79, 0x32}
 	flagNeedleOK      = byte(0)
 	flagNeedleDeleted = byte(1)
+	// crc32 checksum table, goroutine safe
+	crc32Table = crc32.MakeTable(crc32.Koopman)
 
 	padding = [][]byte{nil}
 
@@ -111,7 +115,6 @@ func (needle *Needle) init() {
 		needle.Padding = padding[needle.PaddingSize]
 	}
 
-	needle.newBuffer()
 
 }
 
@@ -128,6 +131,15 @@ func (needle *Needle) DataBuffer() []byte {
 
 func (needle *Needle) Close() {
 	needle.freeBuffer()
+}
+
+func (needle *Needle) ReadFrom(file io.Reader) (err error){
+	needle.Data = make([]byte, needle.Size)
+	if _, err = file.Read(needle.Data); err != nil {
+		return
+	}
+	needle.Checksum = crc32.Update(0, crc32Table, needle.Data)
+	return
 }
 
 // NeedleOffset convert offset to needle offset.
@@ -189,6 +201,7 @@ func (needle *Needle) freeBuffer() {
 
 // ======== FillBuffer() ========
 func (this *Needle) FillBuffer() (err error) {
+	this.newBuffer()
 	this.fillHeaderBuffer(this.buffer[NEEDLE_MAGIC_OFFSET:NEEDLE_DATA_OFFSET])
 	footerOffset := NEEDLE_DATA_OFFSET + this.Size
 	this.fillDataBuffer(this.buffer[NEEDLE_DATA_OFFSET:footerOffset])
