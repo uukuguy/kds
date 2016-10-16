@@ -6,6 +6,7 @@ import (
 
 // big endian
 
+// BytesToUint64 ()
 func BytesToUint64(b []byte) (v uint64) {
 	length := uint(len(b))
 	for i := uint(0); i < length-1; i++ {
@@ -15,6 +16,8 @@ func BytesToUint64(b []byte) (v uint64) {
 	v += uint64(b[length-1])
 	return
 }
+
+// BytesToUint32 ()
 func BytesToUint32(b []byte) (v uint32) {
 	length := uint(len(b))
 	for i := uint(0); i < length-1; i++ {
@@ -24,30 +27,41 @@ func BytesToUint32(b []byte) (v uint32) {
 	v += uint32(b[length-1])
 	return
 }
+
+// BytesToUint16 ()
 func BytesToUint16(b []byte) (v uint16) {
 	v += uint16(b[0])
 	v <<= 8
 	v += uint16(b[1])
 	return
 }
+
+// Uint64toBytes ()
 func Uint64toBytes(b []byte, v uint64) {
 	for i := uint(0); i < 8; i++ {
 		b[7-i] = byte(v >> (i * 8))
 	}
 }
+
+// Uint32toBytes ()
 func Uint32toBytes(b []byte, v uint32) {
 	for i := uint(0); i < 4; i++ {
 		b[3-i] = byte(v >> (i * 8))
 	}
 }
+
+// Uint16toBytes ()
 func Uint16toBytes(b []byte, v uint16) {
 	b[0] = byte(v >> 8)
 	b[1] = byte(v)
 }
+
+// Uint8toBytes ()
 func Uint8toBytes(b []byte, v uint8) {
 	b[0] = byte(v)
 }
 
+// BigEndian -
 var BigEndian bigEndian
 
 type bigEndian struct{}

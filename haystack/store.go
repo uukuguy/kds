@@ -1,11 +1,12 @@
 package haystack
 
 import (
-	"github.com/uukuguy/kds/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	log "github.com/uukuguy/kds/utils/logger"
 )
 
 // **************** Store ****************
@@ -26,10 +27,10 @@ func NewStore(store_dir string) (store *Store) {
 
 // ======== Init() ========
 func (this *Store) Init() (err error) {
-	utils.LogInfof("Init kds store in %s", this.Dir)
+	log.Infof("Init kds store in %s", this.Dir)
 
 	if err = os.MkdirAll(this.Dir, os.ModeDir|0755); err != nil {
-		utils.LogErrorf(err, "os.MkdirAll() failed. dir=%s err=%v", this.Dir, err)
+		log.Errorf("os.MkdirAll() failed. dir=%s err=%v", this.Dir, err)
 		return
 	}
 
@@ -57,21 +58,21 @@ func (this *Store) loadVolumes() (err error) {
 			var vid int64
 			var volume *Volume
 			if vid, err = strconv.ParseInt(basename[:len(basename)-4], 10, 64); err == nil {
-				utils.LogDebugf("i=%d Loading volume %d from %s", i, vid, basename)
+				log.Debugf("i=%d Loading volume %d from %s", i, vid, basename)
 				volume = NewVolume(int32(vid), this.Dir)
 				if err = volume.Init(); err != nil {
 					// 初始化失败一个卷，整个Store就无法初始化。
-					utils.LogErrorf(err, "volume %d in %s Init() failed. %v", vid, this.Dir, err)
+					log.Errorf("volume %d in %s Init() failed. %v", vid, this.Dir, err)
 					return err
 				}
 			}
 			this.Volumes[int32(vid)] = volume
-			utils.LogDebugf("Loaded volume info. %s", volume.String())
+			log.Debugf("Loaded volume info. %s", volume.String())
 		}
 
 	}
 
-	utils.LogInfof("%d volumes loaded.", len(this.Volumes))
+	log.Infof("%d volumes loaded.", len(this.Volumes))
 
 	return
 }
@@ -86,7 +87,7 @@ func (store *Store) GetVolume(vid int32) (*Volume, bool) {
 func (this *Store) CreateVolume(vid int32) (volume *Volume, err error) {
 	volume = NewVolume(vid, this.Dir)
 	if err = volume.Init(); err != nil {
-		utils.LogErrorf(err, "Store.CreateVolume() failed. vid:%d %v", vid, err)
+		log.Errorf("Store.CreateVolume() failed. vid:%d %v", vid, err)
 		return
 	}
 	this.Volumes[vid] = volume

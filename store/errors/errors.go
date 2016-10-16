@@ -1,5 +1,6 @@
 package errors
 
+// Error -
 type Error int
 
 func (e Error) Error() string {
@@ -49,15 +50,23 @@ var (
 	// -------- Store --------
 
 	// -------- Volume --------
+
+	// ErrVolumeNotExist -
 	ErrVolumeNotExist = Error(msgVolumeNotExist)
 
 	// -------- Data --------
+
+	// ErrDataNomoreSpace -
 	ErrDataNomoreSpace = Error(msgDataNomoreSpace)
 
 	// -------- Index --------
+
+	// ErrIndexNomoreSpace -
 	ErrIndexNomoreSpace = Error(msgIndexNomoreSpace)
 
 	// -------- Needle --------
+
+	// ErrNeedleNotExist -
 	ErrNeedleNotExist = Error(msgNeedleNotExist)
 
 	// -------- StoreServer --------

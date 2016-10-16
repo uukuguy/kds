@@ -28,13 +28,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
-	"github.com/uukuguy/kds/server"
-	"github.com/uukuguy/kds/utils"
 	"net/http"
 	"runtime"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
+	"github.com/uukuguy/kds/server"
+	log "github.com/uukuguy/kds/utils/logger"
 )
 
 // -------- serverCmd *cobra.Command --------
@@ -42,13 +43,13 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "KDS server.",
 	Long:  "Server node in kds clust.",
-	Run:   execute_serverCmd,
+	Run:   executeServerCmd,
 }
 
-var server_name = server.SERVER_DEFAULT_NAME
-var server_ip = server.SERVER_DEFAULT_IP
-var server_port = server.SERVER_DEFAULT_PORT
-var store_dir = server.SERVER_DEFAULT_STOREDIR
+var serverName = server.SERVER_DEFAULT_NAME
+var serverIP = server.SERVER_DEFAULT_IP
+var serverPort = server.SERVER_DEFAULT_PORT
+var storeDir = server.SERVER_DEFAULT_STOREDIR
 
 // -------- init() --------
 func init() {
@@ -56,13 +57,13 @@ func init() {
 
 	//Persistent Flags which will work for this command and all subcommands.
 	serverCmd.PersistentFlags().StringVar(
-		&server_ip, "ip", server.SERVER_DEFAULT_IP, "Server IP.")
+		&serverIP, "ip", server.SERVER_DEFAULT_IP, "Server IP.")
 	serverCmd.PersistentFlags().IntVar(
-		&server_port, "port", server.SERVER_DEFAULT_PORT, "Server port.")
+		&serverPort, "port", server.SERVER_DEFAULT_PORT, "Server port.")
 	serverCmd.PersistentFlags().StringVar(
-		&store_dir, "dir", server.SERVER_DEFAULT_STOREDIR, "Store Dir.")
+		&storeDir, "dir", server.SERVER_DEFAULT_STOREDIR, "Store Dir.")
 	serverCmd.PersistentFlags().StringVar(
-		&server_name, "name", server.SERVER_DEFAULT_NAME, "Server Name.")
+		&serverName, "name", server.SERVER_DEFAULT_NAME, "Server Name.")
 
 	// Local flags, which will only run when this action is called directly.
 	serverCmd.Flags().IntP("vmodule", "v", 0, "glog vmodule. -v=1 for debug.")
@@ -84,43 +85,43 @@ func setRateLimitHandler(handler http.Handler) http.Handler {
 	//}
 }
 
-// -------- execute_serverCmd() --------
-func execute_serverCmd(cmd *cobra.Command, args []string) {
+// -------- executeServerCmd() --------
+func executeServerCmd(cmd *cobra.Command, args []string) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	utils.LogInfof("Kleine Dateien Stack - Server...")
+	log.Infof("Kleine Dateien Stack - Server...")
 
 	var ss *server.StackServer
 	var err error
-	if ss, err = server.NewStackServer(server_ip, server_port, store_dir); err != nil {
+	if ss, err = server.NewStackServer(serverIP, serverPort, storeDir); err != nil {
 	}
 	defer ss.Close()
 
 	ss.ListenAndServe()
 }
 
-// -------- execute_serverCmd_Mux() --------
-func execute_serverCmd_Mux(cmd *cobra.Command, args []string) {
+// -------- executeServerCmdMux() --------
+func executeServerCmdMux(cmd *cobra.Command, args []string) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	fmt.Println("Kleine Dateien Stack - Server...")
 
 	router := mux.NewRouter()
 
-	root_router := router.NewRoute().PathPrefix("/").Subrouter()
-	bucket_router := root_router.PathPrefix("/{bucket}").Subrouter()
+	rootRouter := router.NewRoute().PathPrefix("/").Subrouter()
+	bucketRouter := rootRouter.PathPrefix("/{bucket}").Subrouter()
 
-	object_handlers := server.ObjectHandlers{}
-	bucket_router.Methods("GET").Path("/{object:.+}").HandlerFunc(object_handlers.Handle_GetObject)
-	bucket_router.Methods("PUT").Path("/{object:.+}").HandlerFunc(object_handlers.Handle_PutObject)
-	bucket_router.Methods("DELETE").Path("/{object:.+}").HandlerFunc(object_handlers.Handle_DeleteObject)
+	objectHandlers := server.ObjectHandlers{}
+	bucketRouter.Methods("GET").Path("/{object:.+}").HandlerFunc(objectHandlers.Handle_GetObject)
+	bucketRouter.Methods("PUT").Path("/{object:.+}").HandlerFunc(objectHandlers.Handle_PutObject)
+	bucketRouter.Methods("DELETE").Path("/{object:.+}").HandlerFunc(objectHandlers.Handle_DeleteObject)
 
 	var handlerFuncs = []server.HandlerFunc{
 		setRateLimitHandler,
 	}
 	handler := server.RegisterHandlers(router, handlerFuncs...)
 
-	addr := server_ip + ":" + strconv.Itoa(server_port)
+	addr := serverIP + ":" + strconv.Itoa(serverPort)
 	server := server.NewMuxServer("Main", addr, handler)
 
 	var err error
@@ -132,6 +133,6 @@ func execute_serverCmd_Mux(cmd *cobra.Command, args []string) {
 		err = server.ListenAndServe()
 	}
 
-	utils.FatalIf(err, "Failed to start kds server.", "server_ip:", server_ip, "server_port", server_port)
+	log.FatalIf(err, "Failed to start kds server.", "serverIP:", serverIP, "serverPort", serverPort)
 
 }

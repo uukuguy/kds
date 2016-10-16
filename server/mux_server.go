@@ -29,30 +29,35 @@ package server
 import (
 	"crypto/tls"
 	"errors"
-	"github.com/uukuguy/kds/utils"
 	"net"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
+
+	log "github.com/uukuguy/kds/utils/logger"
 )
 
+// MuxConn -
 // **************** MuxConn ****************
 type MuxConn struct {
 	net.Conn
 }
 
+// NewMuxConn ()
 // ======== NewMuxConn() ========
 func NewMuxConn(conn net.Conn) *MuxConn {
 	return &MuxConn{Conn: conn}
 }
 
+// MuxListener -
 // **************** MuxListener ****************
 type MuxListener struct {
 	net.Listener
 	config *tls.Config
 }
 
+// Accept ()
 // ======== MuxListener::Accept() ========
 func (l *MuxListener) Accept() (net.Conn, error) {
 
@@ -65,6 +70,7 @@ func (l *MuxListener) Accept() (net.Conn, error) {
 	return muxConn, nil
 }
 
+// Close ()
 // ======== MuxListener::Close() ========
 func (l *MuxListener) Close() error {
 	if l == nil {
@@ -73,6 +79,7 @@ func (l *MuxListener) Close() error {
 	return l.Listener.Close()
 }
 
+// MuxServer -
 // **************** MuServer ****************
 type MuxServer struct {
 	Name string
@@ -85,6 +92,7 @@ type MuxServer struct {
 	conns           map[net.Conn]http.ConnState
 }
 
+// NewMuxServer ()
 // ======== NewMuxServer() ========
 func NewMuxServer(name string, addr string, handler http.Handler) *MuxServer {
 	ms := &MuxServer{
@@ -105,6 +113,7 @@ func NewMuxServer(name string, addr string, handler http.Handler) *MuxServer {
 	return ms
 }
 
+// ListenAndServe ()
 // ======== MuxServer::ListenAndServe() ========
 func (ms *MuxServer) ListenAndServe() error {
 	listener, err := net.Listen("tcp", ms.Server.Addr)
@@ -118,11 +127,12 @@ func (ms *MuxServer) ListenAndServe() error {
 	ms.listener = muxListener
 	ms.mutex.Unlock()
 
-	utils.LogInfof("Server "+ms.Name+" ListenAndServer(). addr:%s", ms.Server.Addr)
+	log.Infof("Server "+ms.Name+" ListenAndServer(). addr:%s", ms.Server.Addr)
 
 	return ms.Server.Serve(muxListener)
 }
 
+// ListenAndServeTLS ()
 // ======== MuxServer::ListenAndServeTLS() ========
 func (ms *MuxServer) ListenAndServeTLS(certFile, keyFile string) error {
 	listener, err := net.Listen("tcp", ms.Server.Addr)
@@ -166,6 +176,7 @@ func (ms *MuxServer) ListenAndServeTLS(certFile, keyFile string) error {
 	return err
 }
 
+// Close ()
 // ======== MuxServer::Close() ========
 func (ms *MuxServer) Close() error {
 	ms.mutex.Lock()

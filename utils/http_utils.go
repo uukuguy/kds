@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	client    *http.Client
+	client *http.Client
+	// Transport -
 	Transport *http.Transport
 )
 
@@ -27,8 +28,8 @@ func init() {
 	}
 }
 
-// -------- wait_http_response() --------
-func wait_http_response(url string, rsp *http.Response, err error) ([]byte, error) {
+// -------- waitHTTPResponse() --------
+func waitHTTPResponse(url string, rsp *http.Response, err error) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Wait http response %s: %v", url, err)
 	}
@@ -36,40 +37,44 @@ func wait_http_response(url string, rsp *http.Response, err error) ([]byte, erro
 		return nil, fmt.Errorf("%s: %s", url, rsp.Status)
 	}
 
-	rsp_body, err := ioutil.ReadAll(rsp.Body)
+	rspBody, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Read response body: %v", err)
 	}
 
-	return rsp_body, nil
+	return rspBody, nil
 }
 
+// HTTPPostBytes ()
 // ======== HttpPostBytes() ========
-func HttpPostBytes(url string, body []byte) ([]byte, error) {
+func HTTPPostBytes(url string, body []byte) ([]byte, error) {
 	rsp, err := client.Post(url, "application/octet-stream", bytes.NewReader(body))
 	defer rsp.Body.Close()
 
-	return wait_http_response(url, rsp, err)
+	return waitHTTPResponse(url, rsp, err)
 }
 
-// ======== HttpPost() ========
-func HttpPost(url string, values url.Values) ([]byte, error) {
+// HTTPPost ()
+// ======== HTTPPost() ========
+func HTTPPost(url string, values url.Values) ([]byte, error) {
 	rsp, err := client.PostForm(url, values)
 	defer rsp.Body.Close()
 
-	return wait_http_response(url, rsp, err)
+	return waitHTTPResponse(url, rsp, err)
 }
 
-// ======== HttpGet() ========
-func HttpGet(url string) ([]byte, error) {
+// HTTPGet ()
+// ======== HTTPGet() ========
+func HTTPGet(url string) ([]byte, error) {
 	rsp, err := client.Get(url)
 	defer rsp.Body.Close()
 
-	return wait_http_response(url, rsp, err)
+	return waitHTTPResponse(url, rsp, err)
 }
 
-// ======== HttpDelete() ========
-func HttpDelete(url string) error {
+// HTTPDelete ()
+// ======== HTTPDelete() ========
+func HTTPDelete(url string) error {
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return err
@@ -99,13 +104,15 @@ func HttpDelete(url string) error {
 	return errors.New(string(body))
 }
 
-// ======== HttpDoRequest() ========
-func HttpDoRequest(req *http.Request) (*http.Response, error) {
+// HTTPDoRequest ()
+// ======== HTTPDoRequest() ========
+func HTTPDoRequest(req *http.Request) (*http.Response, error) {
 	return client.Do(req)
 }
 
-// ======== HttpDownloadFile() ========
-func HttpDownloadFile(url string) (filename string, rc io.ReadCloser, err error) {
+// HTTPDownloadFile ()
+// ======== HTTPDownloadFile() ========
+func HTTPDownloadFile(url string) (filename string, rc io.ReadCloser, err error) {
 	rsp, err := client.Get(url)
 	if err != nil {
 		return "", nil, err
@@ -121,8 +128,9 @@ func HttpDownloadFile(url string) (filename string, rc io.ReadCloser, err error)
 	return
 }
 
-// ======== HttpPost_by_Func ========
-func HttpPost_by_Func(url string, values url.Values, allocatedBuf []byte, eachBufferFn func([]byte, int)) error {
+// HTTPPostByFunc ()
+// ======== HTTPPostByFunc ========
+func HTTPPostByFunc(url string, values url.Values, allocatedBuf []byte, eachBufferFn func([]byte, int)) error {
 	rsp, err := client.PostForm(url, values)
 	defer rsp.Body.Close()
 	if err != nil {
@@ -146,8 +154,9 @@ func HttpPost_by_Func(url string, values url.Values, allocatedBuf []byte, eachBu
 	return nil
 }
 
-// ======== HttpPost_by_Reader() ========
-func HttpPost_by_reader(url string, values url.Values, readFn func(io.Reader) error) error {
+// HTTPPostByReader ()
+// ======== HTTPPostByReader() ========
+func HTTPPostByReader(url string, values url.Values, readFn func(io.Reader) error) error {
 	rsp, err := client.PostForm(url, values)
 	defer rsp.Body.Close()
 	if err != nil {

@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	SUPERBLOCK_SIZE           = NEEDLE_PADDINGSIZE
-	SUPERBLOCK_MAGIC_OFFSET   = 0
-	SUPERBLOCK_MAGIC_SIZE     = 4
-	SUPERBLOCK_VERSION_OFFSET = SUPERBLOCK_MAGIC_OFFSET + SUPERBLOCK_MAGIC_SIZE
-	SUPERBLOCK_VERSION_SIZE   = 1
-	SUPERBLOCK_PADDING_OFFSET = SUPERBLOCK_VERSION_OFFSET + SUPERBLOCK_VERSION_SIZE
-	SUPERBLOCK_PADDING_SIZE   = SUPERBLOCK_SIZE - SUPERBLOCK_PADDING_OFFSET
+	SuperBlockSize          = NeedlePaddingSize
+	SuperBlockMagicOffset   = 0
+	SuperBlockMagicSize     = 4
+	SuperBlockVersionOffset = SuperBlockMagicOffset + SuperBlockMagicSize
+	SuperBlockVersionSize   = 1
+	SuperBlockPaddingOffset = SuperBlockVersionOffset + SuperBlockVersionSize
+	SuperBlockPaddingSize   = SuperBlockSize - SuperBlockPaddingOffset
 )
 
 var (
@@ -22,9 +22,10 @@ var (
 
 	superblockMagic   = []byte{0x83, 0x84, 0x77, 0x55}
 	superblockVersion = []byte{blockVersion}
-	superblockPadding = bytes.Repeat([]byte{byte(0)}, SUPERBLOCK_PADDING_SIZE)
+	superblockPadding = bytes.Repeat([]byte{byte(0)}, SuperBlockPaddingSize)
 )
 
+// SuperBlock -
 // **************** SuperBlock ****************
 type SuperBlock struct {
 	Magic   []byte
@@ -32,6 +33,7 @@ type SuperBlock struct {
 	Padding []byte
 }
 
+// NewSuperBlock -
 // ======== NewSuperBlock() ========
 func NewSuperBlock() *SuperBlock {
 	superblock := &SuperBlock{
@@ -43,46 +45,48 @@ func NewSuperBlock() *SuperBlock {
 	return superblock
 }
 
+// WriteToFile -
 // ======== WriteToFile() ========
-func (this *SuperBlock) WriteToFile(writer *os.File) (writedSize uint64, err error) {
+func (_this *SuperBlock) WriteToFile(writer *os.File) (writedSize uint64, err error) {
 	writedSize = 0
 
 	// Write Super Block Magic
-	if _, err = writer.Write(this.Magic); err != nil {
+	if _, err = writer.Write(_this.Magic); err != nil {
 		return
 	}
-	writedSize += uint64(len(this.Magic))
+	writedSize += uint64(len(_this.Magic))
 
 	// Write Super Block Version
-	if _, err = writer.Write([]byte{this.Version}); err != nil {
+	if _, err = writer.Write([]byte{_this.Version}); err != nil {
 		return
 	}
-	writedSize += SUPERBLOCK_VERSION_SIZE
+	writedSize += SuperBlockVersionSize
 
 	// Write Super Block Padding
-	if _, err = writer.Write(this.Padding); err != nil {
+	if _, err = writer.Write(_this.Padding); err != nil {
 		return
 	}
-	writedSize += uint64(len(this.Padding))
+	writedSize += uint64(len(_this.Padding))
 
 	return
 }
 
+// ReadFromFile -
 // ======== ReadFromFile() ========
-func (this *SuperBlock) ReadFromFile(reader *os.File) (err error) {
-	var buf = make([]byte, SUPERBLOCK_SIZE)
-	if _, err = reader.Read(buf[:SUPERBLOCK_SIZE]); err != nil {
+func (_this *SuperBlock) ReadFromFile(reader *os.File) (err error) {
+	var buf = make([]byte, SuperBlockSize)
+	if _, err = reader.Read(buf[:SuperBlockSize]); err != nil {
 		return
 	}
 
-	this.Magic = buf[SUPERBLOCK_MAGIC_OFFSET : SUPERBLOCK_MAGIC_OFFSET+SUPERBLOCK_MAGIC_SIZE]
-	this.Version = buf[SUPERBLOCK_VERSION_OFFSET : SUPERBLOCK_VERSION_OFFSET+SUPERBLOCK_VERSION_SIZE][0]
-	this.Padding = buf[SUPERBLOCK_PADDING_OFFSET : SUPERBLOCK_PADDING_OFFSET+SUPERBLOCK_PADDING_SIZE]
+	_this.Magic = buf[SuperBlockMagicOffset : SuperBlockMagicOffset+SuperBlockMagicSize]
+	_this.Version = buf[SuperBlockVersionOffset : SuperBlockVersionOffset+SuperBlockVersionSize][0]
+	_this.Padding = buf[SuperBlockPaddingOffset : SuperBlockPaddingOffset+SuperBlockPaddingSize]
 
-	if !bytes.Equal(this.Magic, superblockMagic) {
+	if !bytes.Equal(_this.Magic, superblockMagic) {
 		return fmt.Errorf("SuperBlock magic number not match.")
 	}
-	if this.Version != superblockVersion[0] {
+	if _this.Version != superblockVersion[0] {
 		return fmt.Errorf("SuperBlock Version not match.")
 	}
 
